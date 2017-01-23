@@ -30,6 +30,8 @@
 		this.didScroll = false;
 		this.$doc = $(document);
 		this.docHeight = this.$doc.height();
+		this.enabled = true;
+		this.init();
 	};
 
 	// the plugin prototype
@@ -139,6 +141,7 @@
 		},
 
 		handleClick: function(e) {
+			if (!this.enabled) return;
 			var self = this;
 			var $link = $(e.currentTarget);
 			var $parent = $link.parent();
@@ -209,14 +212,30 @@
 		unbindInterval: function() {
 			clearInterval(this.t);
 			this.$win.unbind('scroll.onePageNav');
+		},
+
+		enable: function() {
+			this.enabled = true;
+		},
+
+		disable: function() {
+			this.enabled = false;
 		}
 	};
 
 	OnePageNav.defaults = OnePageNav.prototype.defaults;
 
 	$.fn.onePageNav = function(options) {
+		var args = Array.prototype.slice.call(arguments, 1);
 		return this.each(function() {
-			new OnePageNav(this, options).init();
+			var $elem = $(this), inst = $elem.data('OnePageNav');
+			// create plugin instance and save reference to data
+			if (!inst) {
+				$elem.data('OnePageNav', new OnePageNav(this, options));
+			// invoke plugin instance method
+			} else if (typeof options === 'string') {
+				inst[options].apply(inst, args);
+			}
 		});
 	};
 
